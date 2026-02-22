@@ -1,0 +1,253 @@
+let cookies = 0,
+clickPower = 1,
+multiplier = 1,
+cookiesPerSecond = 0;
+
+let rebirths = 0,
+rebirthMultiplier = 1;
+
+let secretNaruto = false;
+let chakra = 0,
+maxChakra = 100,
+chakraMode = false,
+chakraCooldown = false;
+let enterInterval = null;
+
+/* MAIN UPGRADES */
+let upgrades = [
+{ name: "Better Mic", cost: 50, cps: 1, click: 0, desc: "+1 cookie per second" },
+{ name: "Streaming Setup", cost: 200, cps: 5, click: 1, desc: "+1 click power, +5 cps" },
+{ name: "Editor Team", cost: 800, cps: 15, click: 2, desc: "+2 click power, +15 cps" },
+{ name: "Viral Clip", cost: 2000, cps: 40, click: 5, desc: "+5 click power, +40 cps" },
+{ name: "Sponsor Deal", cost: 5000, cps: 100, click: 10, desc: "+10 click power, +100 cps" },
+{ name: "Merch Drop", cost: 12000, cps: 250, click: 20, desc: "+20 click power, +250 cps" },
+{ name: "Twitch Partner", cost: 25000, cps: 600, click: 35, desc: "+35 click power, +600 cps" },
+{ name: "YouTube Empire", cost: 60000, cps: 1500, click: 60, desc: "+60 click power, +1500 cps" },
+{ name: "Esports Org", cost: 120000, cps: 3500, click: 100, desc: "+100 click power, +3500 cps" },
+{ name: "Global Icon", cost: 300000, cps: 8000, click: 200, desc: "+200 click power, +8000 cps" }
+];
+
+/* SOFIA UPGRADES */
+let sofiaUpgrades = [
+{ name: "Golden Cookie", cost: 1000, effect: 1, type: "multiplier", desc: "+1x multiplier" },
+{ name: "Diamond Mixer", cost: 5000, effect: 5, type: "click", desc: "+5 click power" },
+{ name: "Shadow Boost", cost: 15000, effect: 2, type: "multiplier", desc: "+2x multiplier" },
+{ name: "Dark Energy", cost: 40000, effect: 15, type: "click", desc: "+15 click power" },
+{ name: "Soul Contract", cost: 100000, effect: 3, type: "multiplier", desc: "+3x multiplier" },
+{ name: "Reaper Ascension", cost: 250000, effect: 50, type: "click", desc: "+50 click power" }
+];
+
+/* NARUTO UPGRADES */
+let narutoUpgrades = [
+{ name: "Shadow Clone Jutsu", cost: 7200, effect: 5, type: "click", desc: "+5 click power" },
+{ name: "Rasengan Mastery", cost: 21600, effect: 10, type: "click", desc: "+10 click power" },
+{ name: "Sage Mode", cost: 72000, effect: 1, type: "multiplier", desc: "+1x multiplier" },
+{ name: "Kurama Bond", cost: 216000, effect: 2, type: "multiplier", desc: "+2x multiplier" }
+];
+
+/* UTIL */
+function format(n) {
+return Math.floor(n).toLocaleString();
+}
+
+/* GAME START */
+function startGame() {
+let name = document.getElementById("playerName").value.trim();
+if (!name) return alert("Enter name!");
+
+document.getElementById("bgMusic").play().catch(() => { });
+
+if (name.toLowerCase() === "naruto") {
+secretNaruto = true;
+document.body.classList.add("sharinganMode");
+document.getElementById("narutoTab").style.display = "inline-block";
+createNaruto();
+}
+
+document.getElementById("startScreen").style.display = "none";
+document.getElementById("topNav").style.display = "block";
+document.getElementById("gameScreen").style.display = "block";
+document.getElementById("welcome").innerText = "Welcome " + name + "!";
+
+createUpgrades();
+createSofia();
+setInterval(autoCookies, 1000);
+setInterval(regenChakra, 1000);
+}
+
+/* HOLD ENTER AUTO CLICK */
+document.addEventListener("keydown", function (e) {
+if (e.key === "Enter" && !enterInterval) {
+enterInterval = setInterval(() => clickCookie({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }), 50);
+}
+});
+document.addEventListener("keyup", function (e) {
+if (e.key === "Enter") {
+clearInterval(enterInterval);
+enterInterval = null;
+}
+});
+
+/* COOKIE CLICK */
+function clickCookie(e) {
+let gain = clickPower * (1 + rebirthMultiplier) * multiplier;
+if (secretNaruto) gain *= 3;
+if (chakraMode) gain *= 5;
+
+cookies += gain;
+if (secretNaruto) chakra = Math.min(maxChakra, chakra + 5);
+
+showFloating("+" + format(gain));
+if (secretNaruto) spawnRasengan(e);
+updateDisplay();
+}
+
+function spawnRasengan(e) {
+let r = document.createElement("div");
+r.className = "rasengan";
+r.style.left = (e.clientX - 20) + "px";
+r.style.top = (e.clientY - 20) + "px";
+document.body.appendChild(r);
+setTimeout(() => r.remove(), 600);
+}
+
+function showFloating(text) {
+let span = document.createElement("span");
+span.className = "floating";
+span.innerText = text;
+document.body.appendChild(span);
+span.style.left = (window.innerWidth / 2) + "px";
+span.style.top = (window.innerHeight / 2) + "px";
+setTimeout(() => span.remove(), 1000);
+}
+
+/* CREATE & BUY UPGRADES */
+function createUpgrades() {
+let c = document.getElementById("upgrades");
+c.innerHTML = "";
+upgrades.forEach((u, i) => {
+let d = document.createElement("div");
+d.className = "upgrade";
+d.innerHTML = `${u.name}<br>${u.desc}<br>Cost: ${format(u.cost)}`;
+d.onclick = () => buyUpgrade(i);
+c.appendChild(d);
+});
+}
+function buyUpgrade(i) {
+let u = upgrades[i];
+if (cookies >= u.cost) {
+cookies -= u.cost;
+cookiesPerSecond += u.cps;
+clickPower += u.click;
+u.cost = Math.floor(u.cost * 1.2);
+updateDisplay();
+createUpgrades();
+}
+}
+
+function createSofia() {
+let c = document.getElementById("sofiaUpgrades");
+c.innerHTML = "";
+sofiaUpgrades.forEach((u, i) => {
+let d = document.createElement("div");
+d.className = "upgrade";
+d.innerHTML = `${u.name}<br>${u.desc}<br>Cost: ${format(u.cost)}`;
+d.onclick = () => buySofia(i);
+c.appendChild(d);
+});
+}
+function buySofia(i) {
+let u = sofiaUpgrades[i];
+if (cookies >= u.cost) {
+cookies -= u.cost;
+if (u.type === "multiplier") multiplier += u.effect;
+if (u.type === "click") clickPower += u.effect;
+u.cost = Math.floor(u.cost * 1.3);
+updateDisplay();
+createSofia();
+}
+}
+
+function createNaruto() {
+let c = document.getElementById("narutoUpgrades");
+c.innerHTML = "";
+narutoUpgrades.forEach((u, i) => {
+let d = document.createElement("div");
+d.className = "upgrade";
+d.innerHTML = `${u.name}<br>${u.desc}<br>Cost: ${format(u.cost)}`;
+d.onclick = () => buyNaruto(i);
+c.appendChild(d);
+});
+}
+function buyNaruto(i) {
+let u = narutoUpgrades[i];
+if (cookies >= u.cost) {
+cookies -= u.cost;
+if (u.type === "click") clickPower += u.effect;
+if (u.type === "multiplier") multiplier += u.effect;
+u.cost = Math.floor(u.cost * 1.2);
+updateDisplay();
+createNaruto();
+}
+}
+
+/* CHAKRA MODE */
+function activateChakraMode() {
+if (chakra >= 100 && !chakraMode && !chakraCooldown) {
+chakraMode = true;
+chakraCooldown = true;
+document.body.classList.add("kuramaMode");
+
+setTimeout(() => {
+chakraMode = false;
+chakra = 0;
+document.body.classList.remove("kuramaMode");
+}, 20000);
+
+setTimeout(() => { chakraCooldown = false; }, 20000);
+}
+}
+function regenChakra() {
+if (!secretNaruto) return;
+if (!chakraMode) chakra = Math.min(maxChakra, chakra + 2);
+document.getElementById("chakraBar").style.width = (chakra / maxChakra * 100) + "%";
+}
+
+/* AUTO COOKIES */
+function autoCookies() { cookies += cookiesPerSecond; updateDisplay(); }
+
+/* REBIRTH */
+function rebirth() {
+if (cookies >= 1000000) {
+cookies = 0;
+clickPower = 1;
+cookiesPerSecond = 0;
+rebirths++;
+rebirthMultiplier += 1;
+updateDisplay();
+}
+}
+
+/* UPDATE DISPLAY */
+function updateDisplay() {
+document.getElementById("cookieCount").innerText = format(cookies);
+document.getElementById("perSecond").innerText = format(cookiesPerSecond) + " per second";
+document.getElementById("rebirthDisplay").innerText = rebirths;
+}
+
+/* NAVIGATION */
+function showMain() {
+document.getElementById("gameScreen").style.display = "block";
+document.getElementById("sofiaScreen").style.display = "none";
+document.getElementById("narutoScreen").style.display = "none";
+}
+function showSofia() {
+document.getElementById("gameScreen").style.display = "none";
+document.getElementById("sofiaScreen").style.display = "block";
+document.getElementById("narutoScreen").style.display = "none";
+}
+function showNaruto() {
+document.getElementById("gameScreen").style.display = "none";
+document.getElementById("sofiaScreen").style.display = "none";
+document.getElementById("narutoScreen").style.display = "block";
+}

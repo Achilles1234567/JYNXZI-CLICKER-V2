@@ -1,0 +1,97 @@
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(270deg,#111,#1a1a1a,#222,#111);
+background-size:600% 600%;
+animation:bgMove 15s ease infinite;
+color:white;
+text-align:center;
+overflow-x:hidden;
+overflow-y:hidden;
+transition:0.4s;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+
+.kuramaMode{
+background:radial-gradient(circle,#ff9800,#b71c1c,#000);
+}
+
+.sharinganMode{
+background:radial-gradient(circle at center,#8b0000 0%,#000 70%);
+animation:spinBg 10s linear infinite;
+}
+@keyframes spinBg{
+from{background-position:0 0;}
+to{background-position:400px 400px;}
+}
+
+button{
+padding:10px 20px;
+margin:5px;
+border:none;
+border-radius:8px;
+background:orange;
+font-weight:bold;
+cursor:pointer;
+transition:0.2s;
+}
+button:hover{ background:gold; transform:scale(1.1); }
+
+#topNav{ display:none; background:#222; padding:10px; }
+#gameScreen,#sofiaScreen,#narutoScreen{ display:none; padding-top:20px; }
+
+.upgrade{
+background:#333;
+margin:8px;
+padding:12px;
+border-radius:12px;
+cursor:pointer;
+}
+
+#jynxzi{ width:150px; cursor:pointer; }
+
+.floating{
+position:absolute;
+font-weight:bold;
+pointer-events:none;
+animation:floatUp 1s ease forwards;
+color:gold;
+}
+@keyframes floatUp{
+0%{opacity:1; transform:translateY(0)}
+100%{opacity:0; transform:translateY(-80px)}
+}
+
+/* Chakra */
+#chakraBarContainer{
+width:300px;
+height:20px;
+background:#333;
+margin:10px auto;
+border-radius:10px;
+}
+#chakraBar{
+height:100%;
+width:0%;
+background:cyan;
+border-radius:10px;
+}
+
+/* Rasengan */
+.rasengan{
+position:absolute;
+width:40px;
+height:40px;
+border-radius:50%;
+background:radial-gradient(circle,#00e5ff,#006064);
+box-shadow:0 0 20px cyan;
+pointer-events:none;
+animation:spin 0.4s linear infinite, fadeOut 0.6s forwards;
+}
+@keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes fadeOut{ to{opacity:0; transform:scale(2)} }
